@@ -9,6 +9,10 @@ const server = http.createServer((req, res) => {
   let pathname;
   try { pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); }
   catch { res.writeHead(400); return res.end(); }
+  if (pathname === '/' || pathname === '/isifconsulting') {
+    res.writeHead(302, { Location: '/isifconsulting/' }); return res.end();
+  }
+  if (pathname.startsWith('/isifconsulting/')) pathname = pathname.slice('/isifconsulting'.length);
   const file = path.resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));
   if (!file.startsWith(root + path.sep)) { res.writeHead(403); return res.end(); }
   fs.readFile(file, (err, body) => {

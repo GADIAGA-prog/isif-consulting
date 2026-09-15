@@ -1,7 +1,7 @@
 # Hébergement ISIF Consulting
 
-- Site public : http://198.244.148.8/
-- Contact : http://198.244.148.8/contact.html
+- Site public : http://198.244.148.8/isifconsulting/
+- Contact : http://198.244.148.8/isifconsulting/contact.html
 - Dépôt public : https://github.com/GADIAGA-prog/isif-consulting
 - Serveur : VPS OVH Windows, IIS.
 - Site et pool IIS : `ISIF-Consulting`.

@@ -3,16 +3,20 @@ param(
   [ValidatePattern('^[a-zA-Z0-9_-]+$')][string]$Release = (Get-Date -Format 'yyyyMMdd-HHmmss')
 )
 $ErrorActionPreference = 'Stop'
-Import-Module ServerManager
 $basePath = 'C:\Sites\ISIF'
 $releasePath = Join-Path $basePath ('releases\' + $Release)
 if (Test-Path -LiteralPath $releasePath) { throw 'La version existe deja. Utiliser un nouvel identifiant.' }
 if (!(Test-Path -LiteralPath $Archive -PathType Leaf)) { throw 'Archive absente.' }
 New-Item -ItemType Directory -Force -Path $releasePath | Out-Null
-Expand-Archive -LiteralPath $Archive -DestinationPath $releasePath
-if (!(Test-Path -LiteralPath (Join-Path $releasePath 'index.html'))) { throw 'index.html absent.' }
-$freshIis = !(Get-WindowsFeature Web-Server).Installed
+$contentPath = Join-Path $releasePath 'isifconsulting'
+New-Item -ItemType Directory -Path $contentPath | Out-Null
+Expand-Archive -LiteralPath $Archive -DestinationPath $contentPath
+if (!(Test-Path -LiteralPath (Join-Path $contentPath 'index.html'))) { throw 'index.html absent.' }
+$landing = '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=/isifconsulting/"><title>ISIF Consulting</title></head><body><a href="/isifconsulting/">Ouvrir ISIF Consulting</a></body></html>'
+[System.IO.File]::WriteAllText((Join-Path $releasePath 'index.html'), $landing, (New-Object System.Text.UTF8Encoding($false)))
+$freshIis = !(Test-Path 'C:\Windows\System32\inetsrv\appcmd.exe')
 if ($freshIis) {
+  Import-Module ServerManager
   if (Get-NetTCPConnection -State Listen -LocalPort 80 -ErrorAction SilentlyContinue) { throw 'Port 80 deja occupe.' }
   $install = Install-WindowsFeature Web-Server,Web-Scripting-Tools -IncludeManagementTools
   if (!$install.Success -or $install.RestartNeeded -eq 'Yes') { throw 'Installation IIS incomplete ou redemarrage requis.' }
@@ -41,7 +45,7 @@ if (!(Get-NetFirewallRule -Name 'ISIF-HTTP' -ErrorAction SilentlyContinue)) {
   New-NetFirewallRule -Name 'ISIF-HTTP' -DisplayName 'ISIF Consulting HTTP' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 80 | Out-Null
 }
 try {
-  $response = Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1/contact.html'
+  $response = Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1/isifconsulting/contact.html'
   if ($response.StatusCode -ne 200 -or $response.Content -notmatch 'project-form') { throw 'Verification du site echouee.' }
 } catch {
   if ($previousPath) { Set-ItemProperty 'IIS:\Sites\ISIF-Consulting' -Name physicalPath -Value $previousPath }
