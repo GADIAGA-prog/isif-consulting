@@ -1,0 +1,11 @@
+{
+  "name": "isif-consulting",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Site indépendant d’ISIF Consulting",
+  "scripts": {
+    "dev": "node scripts/serve.cjs",
+    "check": "node scripts/check.cjs"
+  },
+  "engines": { "node": ">=20" }
+}
